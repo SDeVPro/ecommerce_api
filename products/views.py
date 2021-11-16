@@ -228,5 +228,50 @@ class ProductDetailView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
+
+class ListMicroServiceView(ListAPIView):
+    serializer_class = ProductSerializer 
+    queryset = Product.objects.all()
+
+class MicroServiceCreateView(CreateAPIView):
+    serializer_class = ProductSerializer 
+    queryset = Product.objects.all()
+
+class GETRequests(APIView):
+    def get(self,request,*args,**kwargs):
+        url = "http://127.0.0.1:8000/micro/"
+        response = request.get(url)
+        json_content = json.loads(response.content)
+        """
+        "id":1,
+        "seller":"admin",
+        "category":"books",
+        "created":"2021-13-11T8:52:12.525458Z",
+        "modified":"2021-13-11T8:53:13.151542Z",
+        "title":"Django Rest Framework",
+        "price":"20000",
+        "image":null,
+        "description":"Django Rest Framework",
+        "quantity":2,
+        "views":1,
+        """
+        print(response.headers)
+        return Response(json_content)
+class POSTRequests(APIView):
+    def post(self,request,*args,**kwargs):
+        url = "http://127.0.0.1:8000/micro/create/"
+        content_type = "application/json;charset=utf-8"
+        data = {
+            "id":60,
+            "seller":"Sardor",
+            "title":"post from requests",
+            "price":"1000.0",
+            "description":"post from requests",
+            "quantity":9,
+            "views":100,
+        }
+        response = requests.post(url,data=data)
+        return Response("Success")
+        
         
 
