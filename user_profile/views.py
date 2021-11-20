@@ -212,4 +212,47 @@ class PasswordResetConfirmView(GenericAPIView):
         return Response({"detail":_("Password has been reset with the new password.")})
 
 
-# Create your views here.
+class PasswordChangeView(GenericAPIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    serialzier_class = PasswordChangeSerializer 
+
+    @sensitive_post_parameters_m 
+    def dispatch(self,*args,**kwargs):
+        return super(PasswordChangeView,self).dispatch(*args,**kwargs)
+    
+    def post(self,request,*args,**kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"detail":_("Congratulations, password has been Changed.")})
+
+class VerifyEmailView(APIView,ConfirmEmailView):
+    permission_classes = (permissions.AllowAny,)
+    allowed_methods = ("POST","OPTIONS","HEAD")
+    def get_serializer(self,*args,**kwargs):
+        return VerifyEmailSerializer(*args,**kwargs)
+    def post(self,request,*args,**kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.kwargs["key"] = serializer.validated_data["key"]
+        confirmation = self.get_object()
+        confirmation.confirm(self.request)
+        return Response({"detail":_("ok"),status=status.HTTP_200_OK})
+
+class RetrievePermissionView(RetrieveAPIView):
+    serializer_class = UserPermissionSerializer 
+    queryset = User.objects.all()
+    lookup_field = "username"
+
+class UpdatePermissionView(UpdateAPIView):
+    serializer_class = UserPermissionSerializer 
+    queryset = User.objects.all()
+    lookup_field = "username"
+
+    def partial_update(self,request,*args,**kwargs):
+        kwargs["partial"]=True 
+        return self.update(request,*args,**kwargs)
+class NationalIDImageViewSet(viewsets.ModelViewSet):
+    serializer_class = NationalIDImageSerializer 
+    queryset = NationalIDImage.objects.all().select_related("user")
+    
